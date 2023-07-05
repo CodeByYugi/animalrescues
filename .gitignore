@@ -162,3 +162,6 @@ cython_debug/
 # data files
 *.xlsx
 *.csv
+
+# kml files
+/kml
