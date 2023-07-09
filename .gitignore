@@ -170,3 +170,6 @@ cython_debug/
 /.vscode
 /animalrescue_files
 /data
+
+# misc files
+.DS_Store
