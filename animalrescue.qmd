@@ -1,0 +1,499 @@
+---
+title: "West Midlands Fire Service Animal Rescue Incident Data"
+subtitle: "The aim of the exercise is to explore how you approach undertaking analysis on a novel data set and the insights that you can draw from data."
+date: 14 July 2023
+author: Jurgen Mitsch
+format:
+  revealjs:
+    smaller: true
+    width: 100%
+jupyter: python3
+---
+
+```{python imports_and_setup}
+import pandas as pd
+import datetime
+import numpy as np
+from plotly.subplots import make_subplots
+from plotly import graph_objects as go
+import fiona
+import folium
+from utils import (
+    add_time_dimensions, group_animals, modify_wards,
+    download_district_kml, load_and_combine_kml, combine_maps_w_data,
+    fit_and_predict
+)
+from config import (
+    inc_data_fp, paw_data_fp, census_2021_fp,
+    animal_keywords, dist_ranges, download_kml,
+    corona_periods
+)
+
+pd.options.plotting.backend = "plotly"
+fiona.drvsupport.supported_drivers['LIBKML'] = 'rw'
+```
+
+```{python load_and_prep_incident_data}
+# load animal rescue incident data
+data = pd.read_excel(inc_data_fp, sheet_name='Animal Rescues', skiprows=2, parse_dates=['Incdate'])
+# add various time dimensions to data
+data = add_time_dimensions(data, date_col='Incdate')
+# group animals by type based on incident description
+data = group_animals(data, animal_keywords, desc_col='Incident Detail')
+# align ward names
+data = modify_wards(data, ward_col='Ward')
+
+# load pet population data
+pet_pop_data = pd.read_csv(paw_data_fp, index_col='Year')
+```
+
+```{python load_and_prep_census_data}
+census_2021 = pd.read_csv(census_2021_fp)
+
+for d in data.District.unique():
+    census_2021.loc[:, 'Electoral wards and divisions'] = census_2021.loc[:, 'Electoral wards and divisions'].str.replace(f' ({d})', '')
+census_2021.loc[:, 'Electoral wards and divisions'] = census_2021.loc[:, 'Electoral wards and divisions'].str.replace("'", '')
+census_2021.loc[census_2021['Electoral wards and divisions'] == 'Bilston East', 'Electoral wards and divisions'] = "Bilston South"
+census_2021.loc[census_2021['Electoral wards and divisions'] == 'Bushbury South and Low Hill', 'Electoral wards and divisions'] = "Bushbury South & Low Hill"
+
+census_2021 = census_2021.groupby('Electoral wards and divisions').Observation.sum()
+```
+
+```{python load_and_prep_map_data}
+if download_kml:
+    download_district_kml(dist_ranges)
+
+kml_shapes = load_and_combine_kml(kml_dir='kml')[['Name', 'geometry']].rename(columns={'Name':'Ward'})
+```
+
+```{python combine_datasets}
+mapped_data = combine_maps_w_data(kml_shapes, data, census_2021)
+```
+
+## Incident Data - Overview
+
+::::: {.columns}
+
+:::: {.column width="45%"}
+
+### Data Characteristics
+
+Data covers **Apr 2013 - Mar 23**
+
+**1411** Total incidents
+
+**7** Districts, **190** Wards
+
+### Key Observations
+
+Increasing trend year on year
+
+particular jumps in 2016 and 2021
+
+mostly X incidents per day, fairly irregular/sparse
+
+Seasonality: annual, weekday, BHol/Weekend, ...
+
+incidents year on year
+comment re ratio of days with
+time between
+avg. per day
+
+::::
+
+:::: {.column width="55%"}
+::: {.panel-tabset}
+
+### Incidents over time
+
+``` {python incident_ts_plot}
+#| label: fig-totalincidents-timeseries
+#| fig-cap: "West Midlands Fire Service animal rescue incidents: Total Incidents by financial year (top) and by week (bottom)."
+ts_fig = make_subplots(
+    rows=2, cols=1,
+    subplot_titles=("Total incidents by financial year (Mar-Apr)", "Total incidents by week"),
+    specs=[[{"secondary_y": False}], [{"secondary_y": True}]]
+)
+
+ts_fig.add_trace(
+    go.Scatter(
+        x=data.groupby(data.fin_year).size().index.map(lambda x: f'{x}/{(x+1) % 2000}'),
+        y=data.groupby(data.fin_year).size()
+    ),
+    row=1,
+    col=1
+)
+
+ts_fig.update_xaxes(tickangle=-30, row=1, col=1)
+ts_fig.update_yaxes(title_text="Incidents", row=1, col=1, rangemode="tozero")
+
+for corona_period, corona_dates in corona_periods.items():
+    ts_fig.add_trace(
+        go.Scatter(
+            x=pd.date_range(corona_dates[0], corona_dates[1], freq='d'),
+            y=[1] * len(pd.date_range(corona_dates[0], corona_dates[1], freq='d')),
+            fill='tozeroy',
+            fillcolor='rgba(50, 50, 45, 0.4)' if 'lockdown' in corona_period else 'rgba(150, 150, 145, 0.4)',
+            line_shape='hv', line_color='rgba(0,0,0,0)',
+            showlegend=False,
+            name=corona_period
+        ),
+        row = 2, col = 1,
+        secondary_y=True
+)
+
+ts_fig.add_trace(
+    go.Scatter(
+        x=data.groupby(data.week).size().index,
+        y=data.groupby(data.week).size(),
+        line=dict(color='red', width=1)
+    ),
+    row=2,
+    col=1
+)
+
+
+ts_fig.update_yaxes(title_text="Incidents", row=2, col=1, rangemode="tozero")
+
+ts_fig.update_layout(showlegend=False)
+```
+
+### Trends
+
+```{python}
+#| label: fig-totalincidents-trends
+#| fig-cap: "West Midlands Fire Service animal rescue incidents: Total incidents by month year-on-year (top) and annual trend component (bottom)"
+trend_fig = make_subplots(
+    rows=2, cols=1,
+    subplot_titles=(
+        "Total incidents by month and calendar year",
+        "Incident data annual trend component"
+    )
+)
+
+data_by_year_month = data.groupby([data.Incdate.dt.year, data.Incdate.dt.month]).size().unstack(0)
+
+for col in data_by_year_month.columns:
+    trend_fig.add_trace(
+        go.Scatter(
+            x=data_by_year_month.index.map(lambda x: pd.Timestamp(year=2017, month=x, day=1, freq='M')),
+            y=data_by_year_month[col],
+            name=col
+        ),
+        row=1,
+        col=1
+    )
+
+trend_fig.update_xaxes(tickformat='%B', tickangle=-30, row=1, col=1)
+trend_fig.update_yaxes(title_text='Incidents', rangemode='tozero', row=1, col=1)
+
+prophet_fig = fit_and_predict(
+    data.groupby(data.Incdate.dt.date).size().to_frame().reset_index().rename(columns={'Incdate': 'ds', 0:'y'})
+)
+
+trend_fig.add_trace(
+    go.Scatter(
+        x=prophet_fig.data[2]['x'],
+        y=prophet_fig.data[2]['y'],
+        showlegend=False
+    ),
+    row=2,
+    col=1
+)
+trend_fig.data[1]['showlegend'] = False
+trend_fig.update_xaxes(tickformat='%B', dtick='M1', tickangle=-30, row=2, col=1)
+trend_fig.update_yaxes(title_text='Trend', row=2, col=1)
+
+# trend_fig.add_trace(
+#     prophet_fig.data[3],
+#     row=3,
+#     col=1
+# )
+# trend_fig.data[2]['showlegend'] = False
+# trend_fig.update_xaxes(tickformat='%A', tickangle=-30, row=3, col=1)
+# trend_fig.update_yaxes(title_text='Trend', row=3, col=1)
+```
+
+### time between / poisson
+
+```{python}
+(   
+    (
+        data.groupby(data.Incdate.dt.date).size().reset_index().sort_values('Incdate', ascending=True).Incdate.shift(-1) - \
+        data.groupby(data.Incdate.dt.date).size().reset_index().sort_values('Incdate', ascending=True).Incdate
+    ).dropna().apply(lambda x: x.total_seconds())/ 3600 / 24
+).plot()
+```
+
+:::
+::::
+
+:::::
+
+## Animal Types
+
+:::: {.column width="45%"}
+
+cats and dogs most prevalent
+
+comment re pet population and incidents per pet pop
+
+add stuff re n-grams?
+
+::::
+
+:::: {.column width="55%"}
+::: {.panel-tabset}
+
+### incidents by animal type over time
+
+maybe add ratio breakddown by year (dog/cat/other)
+
+```{python}
+data.groupby([data.fin_year, 'animal'], dropna=False).size().unstack(1, fill_value=0).plot()
+```
+
+incident distribution by animal type (overall)
+```{python}
+data.groupby('animal', dropna=False).size().sort_values(ascending=False).to_frame().assign(ratio=lambda x: x/x.sum(), cumratio=lambda x:x.ratio.cumsum())
+```
+
+:::
+
+::::
+
+### corona and ngrams?
+
+dogs impacted more by corona?
+
+```{python}
+#| label: fig-petpop-timeseries
+#| fig-cap: "UK Pet population over time (source: pdsa)"
+pd.merge(pet_pop_data, data.groupby([data.Incdate.dt.year, 'animal']).size().unstack(), left_index=True, right_index=True).drop([2013, 2023]).assign(cat_ratio=lambda x: x.cat/x.Cats, dog_ratio=lambda x:x.dog/x.Dogs, cat_year_on_year=lambda x:x.cat/x.cat.shift(), dog_year_on_year=lambda x:x.dog/x.dog.shift(), catpop_year_on_year=lambda x:x.Cats/x.Cats.shift(), dogpop_year_on_year=lambda x:x.Dogs/x.Dogs.shift()).plot()
+```
+
+## Location
+
+add animal breakdown by location
+
+```{python}
+#| label: fig-total-incidents-finyear-disctrict
+#| fig-cap: "UK Pet population over time (source: pdsa)"
+data.groupby(['fin_year', 'District']).size().unstack(fill_value=0).plot()
+```
+
+```{python}
+#| label: fig-total-incidents-finyear-ward
+#| fig-cap: "UK Pet population over time (source: pdsa)"
+by_ward = data.groupby(['fin_year', data.Ward.str.replace(' Ward', '')]).size().unstack(fill_value=0)
+fig = go.Figure()
+for c in by_ward:
+    fig.add_trace(go.Scatter(x=by_ward.index, y=by_ward[c], stackgroup='one', name=c))
+fig.show()
+```
+
+```{python map_wards_and_districts}
+mapped_data.explore(
+    column='District',
+    tooltip=["Ward", "Total_Incidents"],  # show "BoroName" value in tooltip (on hover)
+    popup=True,  # show all values in popup (on click)
+    tiles="CartoDB positron",  # use "CartoDB positron" tiles
+    style_kwds=dict(color="black", linewidth=5),
+    legend=True
+)
+```
+
+```{python map_incidents_district}
+mapped_data[['District', 'geometry', 'Total_Incidents']].dissolve(by='District', aggfunc='sum').explore(
+    column='Total_Incidents',
+    tooltip=["District", "Total_Incidents"],  # show "BoroName" value in tooltip (on hover)
+    popup=True,  # show all values in popup (on click)
+    tiles="CartoDB positron",  # use "CartoDB positron" tiles
+    style_kwds=dict(color="black", linewidth=5),
+    legend=True
+)
+```
+
+```{python map_incidents_ward}
+mapped_data.explore(
+    column='Total_Incidents',
+    tooltip=["Ward", "Total_Incidents"],  # show "BoroName" value in tooltip (on hover)
+    popup=True,  # show all values in popup (on click)
+    tiles="CartoDB positron",  # use "CartoDB positron" tiles
+    style_kwds=dict(color="black", linewidth=5),
+    legend=True
+)
+```
+
+```{python map_population_Ward}
+mapped_data.explore(
+    column='Observation',
+    tooltip=["Ward", "Observation"],  # show "BoroName" value in tooltip (on hover)
+    popup=True,  # show all values in popup (on click)
+    tiles="CartoDB positron",  # use "CartoDB positron" tiles
+    style_kwds=dict(color="black", linewidth=5),
+    legend=True
+)
+```
+
+```{python map_population_district}
+mapped_data[['District', 'geometry', 'Observation', 'Total_Incidents']].dissolve(by='District', aggfunc='sum').explore(
+    column='Observation',
+    tooltip=["District", "Observation"],  # show "BoroName" value in tooltip (on hover)
+    popup=True,  # show all values in popup (on click)
+    tiles="CartoDB positron",  # use "CartoDB positron" tiles
+    style_kwds=dict(color="black", linewidth=5),
+    legend=True
+)
+```
+
+```{python map_incident_ratio_district}
+(
+    mapped_data[['District', 'geometry', 'Observation', 'Total_Incidents']]
+    .dissolve(by='District', aggfunc='sum')
+    .assign(Ratio=lambda x: x['Total_Incidents'].div(x.Observation).mul(100))
+).explore(
+    column='Ratio',
+    tooltip=["Ratio", "District", "Total_Incidents", "Observation"],  # show "BoroName" value in tooltip (on hover)
+    popup=True,  # show all values in popup (on click)
+    cmap='Blues',
+    tiles="CartoDB positron",  # use "CartoDB positron" tiles
+    style_kwds=dict(color="black", linewidth=5),
+    legend=True
+)
+```
+
+```{python map_incident_ratio_ward}
+(
+    mapped_data
+    .assign(Ratio=lambda x: x['Total_Incidents'].div(x.Observation).mul(100))
+).explore(
+    column='Ratio',
+    tooltip=["Ratio", "Ward", "District", "Total_Incidents", "Observation"],  # show "BoroName" value in tooltip (on hover)
+    popup=True,  # show all values in popup (on click)
+    cmap='Blues',
+    tiles="CartoDB positron",  # use "CartoDB positron" tiles
+    style_kwds=dict(color="black", linewidth=5),
+    legend=True
+)
+```
+
+## RSPCA
+
+
+
+## What next
+
+interpretation of trends (sevice, change, covid, awareness campaigns, ..;)
+threshold of incident counts/frequency and their significance?
+gap Dec 21- Apr 22? lockdown period, but likely missing data?
+
+-   speak to stakeholders, what's the question? who is qualified to respond? anyone?
+-   more data? postcode, timestamps, false alarms, call source, response times, animal population, what happens to the animals after? Shelter, return to owner, strays vs. pets
+-   demand & capacity, specialised team(s)
+-   where are the fire stations
+
+parallels to healthcare - call route - service access - fire service -\> ambulance, catchment areas, resource - population health & system level modelling
+
+research rare event modelling
+
+# Appendix
+
+looked at things over time, not enough data/detail/consistency
+
+## Year on year change of incident totals
+
+```{python}
+#| label: fig-totalincidents-yoychange
+#| fig-cap: "Year on year change in total incidents by financial year (Mar-Apr)."
+yoy_growth = (
+    data.groupby(data.fin_year).size()
+    .rename('Total Incidents')
+    .to_frame()
+    .assign(
+        diff=lambda x: (x['Total Incidents'].div(x['Total Incidents'].shift(1)) - 1).mul(100).round(2)
+    )
+    .rename(columns={'diff': 'Change over previous year [%]'})
+)
+
+growth_fig = go.Figure()
+
+growth_fig.add_trace(
+    go.Bar(
+        x=yoy_growth.index.map(lambda x: f'{x}/{(x+1) % 2000}')[1:],
+        y=yoy_growth['Change over previous year [%]'].iloc[1:]
+    )
+)
+
+growth_fig.update_xaxes(tickangle=-90)
+growth_fig.update_yaxes(title_text="Change over previous year [%]")
+
+growth_fig.update_layout(
+    width=600,
+    showlegend=False,
+    title=r'Total incidents - % change over previous financial year (Mar-Apr)'
+)
+```
+
+### Total incidents by month
+```{python}
+#| label: fig-totalincidents-month
+#| fig-cap: "Total animal rescue incidents by month (blue) and 12 month rolling mean (red dashed)."
+monthly_inc_fig = go.Figure()
+
+monthly_inc_fig.add_trace(
+    go.Scatter(
+        x=data.groupby(data.month).size().index,
+        y=data.groupby(data.month).size(),
+        name='Monthly incident total'
+    )
+
+)
+
+monthly_inc_fig.add_trace(
+    go.Scatter(
+        x=data.groupby(data.month).size().rolling(12).mean().index,
+        y=data.groupby(data.month).size().rolling(12).mean(),
+        line=dict(dash='dash'),
+        name='Rolling 12 month mean'
+    )
+
+)
+
+monthly_inc_fig.update_yaxes(title_text="Incidents")
+
+monthly_inc_fig.update_layout(
+    title='Total animal rescue incidents per month',
+    legend=dict(
+        yanchor="top",
+        y=-0.1,
+        xanchor="left",
+        x=0
+    )
+)
+```
+
+
+
+``` {python}
+pd.Series(
+    data.groupby([data.Incdate.dt.to_period('Q-MAR').dt.qyear, data.Incdate.dt.date]).size().groupby(level=0).count().values / \
+    [(datetime.date(year+1, 4, 1) - datetime.date(year, 4, 1)).days for year in range(data.Incdate.min().year, data.Incdate.max().year)],
+    index=range(data.Incdate.min().year, data.Incdate.max().year),
+    name='Incident Rate'
+).plot()
+```
+
+# incidents by weekday
+
+```{python}
+#| label: fig-total-incidents-weekday
+#| fig-cap: "West Midlands Fire Service animal rescue incidents by weekday"
+data.groupby(data.weekday).size().plot.bar(title='Total animal rescue incidents by day of week')
+```
+
+```{python}
+#| label: fig-total-incidents-weekday-year
+#| fig-cap: "West Midlands Fire Service animal rescue incidents by weekday and year"
+data.groupby([data.Incdate.dt.year, data.weekday]).size().unstack(0).plot(kind='bar', barmode='group', title='total animal rescues by weekday and year')
+```
