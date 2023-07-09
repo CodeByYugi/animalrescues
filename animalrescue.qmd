@@ -502,11 +502,9 @@ research rare event modelling
 
 # Appendix
 
-looked at things over time, not enough data/detail/consistency
-
 ## Year on year change of incident totals
 
-```{python}
+```{python plot_yoy_change}
 #| label: fig-totalincidents-yoychange
 #| fig-cap: "Year on year change in total incidents by financial year (Mar-Apr)."
 yoy_growth = (
@@ -514,9 +512,10 @@ yoy_growth = (
     .rename('Total Incidents')
     .to_frame()
     .assign(
-        diff=lambda x: (x['Total Incidents'].div(x['Total Incidents'].shift(1)) - 1).mul(100).round(2)
+        diff=lambda x: x['Total Incidents'].sub(x['Total Incidents'].shift(1)),
+        diff_p=lambda x: (x['Total Incidents'].div(x['Total Incidents'].shift(1)) - 1).mul(100).round(2)
     )
-    .rename(columns={'diff': 'Change over previous year [%]'})
+    .rename(columns={'diff_p': 'Change over previous year [%]'})
 )
 
 growth_fig = go.Figure()
@@ -538,8 +537,8 @@ growth_fig.update_layout(
 )
 ```
 
-### Total incidents by month
-```{python}
+## Total incidents by month
+```{python plot_incidents_month}
 #| label: fig-totalincidents-month
 #| fig-cap: "Total animal rescue incidents by month (blue) and 12 month rolling mean (red dashed)."
 monthly_inc_fig = go.Figure()
@@ -576,27 +575,98 @@ monthly_inc_fig.update_layout(
 )
 ```
 
+# Incidents by weekday
 
+```{python plot_indicents_weekday}
+#| label: fig-total-incidents-weekday
+#| fig-cap: "West Midlands Fire Service animal rescue incidents broken down by weekday"
+weekday_fig = make_subplots(
+    rows=1, cols=2,
+    subplot_titles=(
+        'Total incidents by day of week',
+        'Total incidents broken down by weekday and year'
+    )
+)
+weekday_fig.add_trace(
+    go.Bar(
+        x=data.groupby(data.weekday).size().index,
+        y=data.groupby(data.weekday).size(),
+        showlegend=False
+    ),
+    row=1,
+    col=1
+)
 
-``` {python}
-pd.Series(
-    data.groupby([data.Incdate.dt.to_period('Q-MAR').dt.qyear, data.Incdate.dt.date]).size().groupby(level=0).count().values / \
-    [(datetime.date(year+1, 4, 1) - datetime.date(year, 4, 1)).days for year in range(data.Incdate.min().year, data.Incdate.max().year)],
+weekday_fig.update_yaxes(title_text='Incidents', row=1, col=1)
+weekday_fig.update_xaxes(
+    tickvals=data.groupby(data.weekday).size().index,
+    ticktext=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+    row=1, col=1
+)
+
+for col in data.groupby([data.Incdate.dt.year, data.weekday]).size().unstack(0).columns:
+    weekday_fig.add_trace(
+        go.Bar(
+            x=data.groupby([data.Incdate.dt.year, data.weekday]).size().unstack(0).index,
+            y=data.groupby([data.Incdate.dt.year, data.weekday]).size().unstack(0)[col],
+            showlegend=True,
+            name=col
+        ),
+        row=1,
+        col=2
+    )
+
+weekday_fig.update_yaxes(title_text='Incidents', row=1, col=2)
+weekday_fig.update_xaxes(
+    tickvals=data.groupby([data.Incdate.dt.year, data.weekday]).size().unstack(0).index,
+    ticktext=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+    row=1, col=2
+)
+
+weekday_fig.show()
+```
+
+## Ratio of days in the (financial) year with incidents
+
+``` {python plot_finyear_incident_ratio}
+#| label: fig-incident-ratio
+#| fig-cap: "Ratio [%] of days in each financial year where animal rescue incidents have occured."
+finyear_incident_ratio = pd.Series(
+    (
+        data.groupby(
+            [data.Incdate.dt.to_period('Q-MAR').dt.qyear, data.Incdate.dt.date]
+        ).size()
+        .groupby(level=0).count()
+        .values
+    ) / \
+    (
+        [
+            (datetime.date(year+1, 4, 1) - datetime.date(year, 4, 1)).days for year in range(data.Incdate.min().year, data.Incdate.max().year)
+        ]
+    ),
     index=range(data.Incdate.min().year, data.Incdate.max().year),
     name='Incident Rate'
-).plot()
+)
+
+finyear_ratio_fig  = go.Figure()
+
+finyear_ratio_fig.add_trace(
+    go.Scatter(
+        x=finyear_incident_ratio.index,
+        y=finyear_incident_ratio.mul(100),
+        showlegend=False
+    )
+)
+
+finyear_ratio_fig.update_xaxes(
+    tickangle=-30,
+    tickvals=finyear_incident_ratio.index,
+    ticktext=finyear_incident_ratio.index.map(lambda x: f'{x}/{(x+1) % 2000}')
+)
+finyear_ratio_fig.update_yaxes(title_text='Ratio of days in the year with incidents [%]')
+
+finyear_ratio_fig.update_layout(
+    title=r'% of days in the (financial) year where incidents have occured'
+)
 ```
 
-# incidents by weekday
-
-```{python}
-#| label: fig-total-incidents-weekday
-#| fig-cap: "West Midlands Fire Service animal rescue incidents by weekday"
-data.groupby(data.weekday).size().plot.bar(title='Total animal rescue incidents by day of week')
-```
-
-```{python}
-#| label: fig-total-incidents-weekday-year
-#| fig-cap: "West Midlands Fire Service animal rescue incidents by weekday and year"
-data.groupby([data.Incdate.dt.year, data.weekday]).size().unstack(0).plot(kind='bar', barmode='group', title='total animal rescues by weekday and year')
-```
