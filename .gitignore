@@ -165,3 +165,8 @@ cython_debug/
 
 # kml files
 /kml
+
+# folders
+/.vscode
+/animalrescue_files
+/data
