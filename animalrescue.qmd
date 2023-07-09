@@ -417,13 +417,13 @@ for col, cmap in zip(
         column=col,
         cmap=cmap,
         tooltip=["District", col],  # show "BoroName" value in tooltip (on hover)
-    popup=True,  # show all values in popup (on click)
-    tiles="CartoDB positron",  # use "CartoDB positron" tiles
-    style_kwds=dict(color="black", linewidth=5),
+        popup=True,  # show all values in popup (on click)
+        tiles="CartoDB positron",  # use "CartoDB positron" tiles
+        style_kwds=dict(color="black", linewidth=5),
         legend=True,
         show=False,
         name=col
-)
+    )
 
 folium.TileLayer('CartoDB positron', name='Map Layer').add_to(district_map)
 
@@ -484,6 +484,11 @@ ward_map
 
 :::::
 
+```{python}
+#| label: fig-total-incidents-finyear-disctrict
+#| fig-cap: "UK Pet population over time (source: pdsa)"
+data.groupby(['fin_year', 'District']).size().unstack(fill_value=0).plot()
+```
 
 ## What next
 
