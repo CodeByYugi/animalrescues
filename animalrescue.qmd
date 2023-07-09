@@ -318,6 +318,13 @@ for col in prep_animal_totals:
         row=1, col=1
     )
 
+animal_breakdown_fig.update_xaxes(
+    tickangle=-30,
+    tickvals=prep_animal_totals.index,
+    ticktext=prep_animal_totals.index.map(lambda x: f'{x}/{x % 2000}'),
+    row=1, col=1
+)
+
 animal_breakdown_fig.add_trace(
     go.Table(
         header=dict(
@@ -338,7 +345,7 @@ animal_breakdown_fig.update_layout(
     legend=dict(
         orientation="h",
         yanchor="top",
-        y=-0.1,
+        y=-0.2,
         xanchor="left",
         x=0
     )
