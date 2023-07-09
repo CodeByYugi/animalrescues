@@ -51,7 +51,7 @@ pet_pop_data = pd.read_csv(paw_data_fp, index_col='Year')
 census_2021 = pd.read_csv(census_2021_fp)
 
 for d in data.District.unique():
-    census_2021.loc[:, 'Electoral wards and divisions'] = census_2021.loc[:, 'Electoral wards and divisions'].str.replace(f' ({d})', '')
+    census_2021.loc[:, 'Electoral wards and divisions'] = census_2021.loc[:, 'Electoral wards and divisions'].str.replace(f' \({d}\)', '')
 census_2021.loc[:, 'Electoral wards and divisions'] = census_2021.loc[:, 'Electoral wards and divisions'].str.replace("'", '')
 census_2021.loc[census_2021['Electoral wards and divisions'] == 'Bilston East', 'Electoral wards and divisions'] = "Bilston South"
 census_2021.loc[census_2021['Electoral wards and divisions'] == 'Bushbury South and Low Hill', 'Electoral wards and divisions'] = "Bushbury South & Low Hill"
