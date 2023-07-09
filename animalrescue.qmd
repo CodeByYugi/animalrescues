@@ -232,45 +232,136 @@ trend_fig.update_yaxes(title_text='Trend', row=2, col=1)
 
 ## Animal Types
 
-:::: {.column width="45%"}
+::::: {.columns}
 
-cats and dogs most prevalent
+:::: {.column width="40%"}
+
+### Key observations
+
+Cats and dogs most prevalent (64% of total)
+
+Cat related incidents:
+
+- account for 57% of total increase since 2013
+- have increased by 37.5% since 19/20
+  
+Dog-related incidents dropped in 20/21 but have since returned to 19/20 levels
 
 comment re pet population and incidents per pet pop
 
-add stuff re n-grams?
+add stuff re n-grams? dogs impacted more by corona?
 
 ::::
 
-:::: {.column width="55%"}
+:::: {.column width="60%"}
+
 ::: {.panel-tabset}
 
 ### incidents by animal type over time
 
-maybe add ratio breakddown by year (dog/cat/other)
+```{python animal_breakdown_plot}
+#| label: fig-animal-breakdown
+#| fig-cap: "West Midlands Fire Service animal rescue incidents: Total incidents broken down by year and aninaml type. Total incidents by financial year (left) and overall breakdown across all years (right) shown."
+inc_by_animal = data.groupby([data.fin_year, 'animal'], dropna=False).size().unstack(1, fill_value=0)
+prep_animal_totals = pd.concat(
+    [
+        inc_by_animal[['cat', 'dog', 'bird', 'horse', 'pig', 'deer']],
+        inc_by_animal[[col for col in inc_by_animal.columns if col not in ['cat', 'dog', 'bird', 'horse', 'pig', 'deer']]].sum(axis=1).rename('other'),
+    ],
+    axis=1
+)
 
-```{python}
-data.groupby([data.fin_year, 'animal'], dropna=False).size().unstack(1, fill_value=0).plot()
+animal_ratios = (
+    data.groupby('animal', dropna=False).size()
+    .sort_values(ascending=False)
+    .to_frame()
+)
+
+prep_ratios = (
+    pd.concat(
+        [
+            animal_ratios.iloc[:6, :],
+            animal_ratios.iloc[6:, :].sum()
+        ]
+    )
+    .assign(
+        ratio=lambda x: (x/x.sum()).mul(100), cumratio=lambda x:x.ratio.cumsum()
+    )
+    .rename({0: 'other'})
+    .reset_index()
+    .rename(
+        columns={
+            'animal': 'Animal type',
+            0: 'Total incidents',
+            'ratio': r'% of total',
+            'cumratio': 'Cumulative %'
+        }
+    )
+    .round(1)
+)
+
+animal_breakdown_fig = make_subplots(
+    rows=1, cols=2,
+    specs=[[{"type": "scatter"}, {"type": "table"}]],
+    subplot_titles=['Total incidents by year and animal', 'Incidents by animal (2013-)']
+)
+
+for col in prep_animal_totals:
+    animal_breakdown_fig.add_trace(
+        go.Scatter(
+            x=prep_animal_totals.index,
+            y=prep_animal_totals[col],
+            hoverinfo='name+x+y',
+            name=col,
+            showlegend=True
+        ),
+        row=1, col=1
+    )
+
+animal_breakdown_fig.add_trace(
+    go.Table(
+        header=dict(
+            values=list(prep_ratios.columns),
+            fill_color='lightgrey',
+            align='left'
+        ),
+        cells=dict(
+            values=[prep_ratios[col] for col in prep_ratios],
+            fill_color='whitesmoke',
+            align='left'
+        )
+    ),
+    row=1, col=2
+)
+
+animal_breakdown_fig.update_layout(
+    legend=dict(
+        orientation="h",
+        yanchor="top",
+        y=-0.1,
+        xanchor="left",
+        x=0
+    )
+)
+
+animal_breakdown_fig.update_yaxes(title_text="Incidents", row=1, col=1, rangemode="tozero")
+
+animal_breakdown_fig.show()
 ```
 
-incident distribution by animal type (overall)
-```{python}
-data.groupby('animal', dropna=False).size().sort_values(ascending=False).to_frame().assign(ratio=lambda x: x/x.sum(), cumratio=lambda x:x.ratio.cumsum())
-```
-
-:::
-
-::::
-
-### corona and ngrams?
-
-dogs impacted more by corona?
+### corona and ngrams? RSPCA
 
 ```{python}
 #| label: fig-petpop-timeseries
 #| fig-cap: "UK Pet population over time (source: pdsa)"
 pd.merge(pet_pop_data, data.groupby([data.Incdate.dt.year, 'animal']).size().unstack(), left_index=True, right_index=True).drop([2013, 2023]).assign(cat_ratio=lambda x: x.cat/x.Cats, dog_ratio=lambda x:x.dog/x.Dogs, cat_year_on_year=lambda x:x.cat/x.cat.shift(), dog_year_on_year=lambda x:x.dog/x.dog.shift(), catpop_year_on_year=lambda x:x.Cats/x.Cats.shift(), dogpop_year_on_year=lambda x:x.Dogs/x.Dogs.shift()).plot()
 ```
+
+:::
+
+::::
+
+:::::
 
 ## Location
 
