@@ -303,7 +303,7 @@ prep_ratios = (
 animal_breakdown_fig = make_subplots(
     rows=1, cols=2,
     specs=[[{"type": "scatter"}, {"type": "table"}]],
-    subplot_titles=['Total incidents by year and animal', 'Incidents by animal (2013-)']
+    subplot_titles=['Total incidents by year and animal', 'Total incidents by animal (all years)']
 )
 
 for col in prep_animal_totals:
