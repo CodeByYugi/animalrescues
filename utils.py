@@ -120,7 +120,7 @@ def combine_maps_w_data(kml_data, inc_data, census_data):
         map_data.Ward.str.contains('Ettingshall'), 'Ward'
     ] = 'Ettingshall'
 
-    map_data = map_data.dissolve(by='Ward', aggfunc='sum').reset_index()
+    map_data = map_data.dissolve(by='Ward', aggfunc='sum', numeric_only=False).reset_index()
 
     map_data.loc[
         map_data.Ward.isin(['Castle Vale', 'Allens Cross']),
@@ -132,7 +132,31 @@ def combine_maps_w_data(kml_data, inc_data, census_data):
         'District'
     ] = 'Wolverhampton'
 
-    return map_data.join(census_data, how='left', on='Ward')
+    map_data = (
+        map_data
+        .join(census_data, how='left', on='Ward')
+        .fillna(0)
+        .assign(inc_per_pop=lambda x: x[[2021, 2022]].sum(axis=1).div(x.Observation * 2).mul(10000))
+        .rename(
+            columns={
+                'Total_Incidents': 'Total Incidents',
+                'Observation': 'Population (Census 2021)',
+                'inc_per_pop': 'Incidents per 10,000 (21/22 - 22/23)',
+                2013: '2013',
+                2014: '2014',
+                2015: '2015',
+                2016: '2016',
+                2017: '2017',
+                2018: '2018',
+                2019: '2019',
+                2020: '2020',
+                2021: '2021',
+                2022: '2022'
+            }
+        )
+    )
+
+    return map_data
 
 
 def fit_and_predict(to_fit, p=30, f='d'):
