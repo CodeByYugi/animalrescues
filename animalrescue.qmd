@@ -372,112 +372,117 @@ pd.merge(pet_pop_data, data.groupby([data.Incdate.dt.year, 'animal']).size().uns
 
 ## Location
 
+::::: {.columns}
+
+:::: {.column width="40%"}
+
+### Key observations
+
 add animal breakdown by location
 
-```{python}
-#| label: fig-total-incidents-finyear-disctrict
-#| fig-cap: "UK Pet population over time (source: pdsa)"
-data.groupby(['fin_year', 'District']).size().unstack(fill_value=0).plot()
-```
+::::
 
-```{python}
-#| label: fig-total-incidents-finyear-ward
-#| fig-cap: "UK Pet population over time (source: pdsa)"
-by_ward = data.groupby(['fin_year', data.Ward.str.replace(' Ward', '')]).size().unstack(fill_value=0)
-fig = go.Figure()
-for c in by_ward:
-    fig.add_trace(go.Scatter(x=by_ward.index, y=by_ward[c], stackgroup='one', name=c))
-fig.show()
-```
+:::: {.column width="60%"}
 
-```{python map_wards_and_districts}
-mapped_data.explore(
-    column='District',
-    tooltip=["Ward", "Total_Incidents"],  # show "BoroName" value in tooltip (on hover)
-    popup=True,  # show all values in popup (on click)
-    tiles="CartoDB positron",  # use "CartoDB positron" tiles
-    style_kwds=dict(color="black", linewidth=5),
-    legend=True
-)
-```
+::: {.panel-tabset}
+
+### District level
 
 ```{python map_incidents_district}
-mapped_data[['District', 'geometry', 'Total_Incidents']].dissolve(by='District', aggfunc='sum').explore(
-    column='Total_Incidents',
-    tooltip=["District", "Total_Incidents"],  # show "BoroName" value in tooltip (on hover)
+#| label: fig-district-map
+#| fig-cap: "District level visualisation of incident and population geography."
+district_map = mapped_data.explore(
+    column='District',
+    tooltip=["Ward", "Total Incidents"],
+    popup=True,  # show all values in popup (on click)
+    tiles=None,
+    style_kwds=dict(color="black", linewidth=5),
+    legend=True,
+    name="Wards and Districts"
+)
+
+ward_mapped_data = (
+    mapped_data.dissolve(by='District', aggfunc='sum')
+    .drop('Incidents per 10,000 (21/22 - 22/23)', axis=1)
+    .assign(inc_pop = lambda x: x[['2021', '2022']].sum(axis=1).div(x['Population (Census 2021)'] * 2).mul(10000))
+    .rename(columns={'inc_pop': 'Incidents per 10,000 (21/22 - 22/23)'})
+)
+
+for col, cmap in zip(
+    ['Total Incidents', 'Population (Census 2021)', 'Incidents per 10,000 (21/22 - 22/23)'],
+    ['Blues', 'Greys', 'Reds']
+):
+    ward_mapped_data.explore(
+        m=district_map,
+        column=col,
+        cmap=cmap,
+        tooltip=["District", col],  # show "BoroName" value in tooltip (on hover)
     popup=True,  # show all values in popup (on click)
     tiles="CartoDB positron",  # use "CartoDB positron" tiles
     style_kwds=dict(color="black", linewidth=5),
-    legend=True
+        legend=True,
+        show=False,
+        name=col
 )
+
+folium.TileLayer('CartoDB positron', name='Map Layer').add_to(district_map)
+
+folium.LayerControl().add_to(district_map)  # use folium to add layer control
+
+district_map
 ```
+
+### Ward level
 
 ```{python map_incidents_ward}
-mapped_data.explore(
-    column='Total_Incidents',
-    tooltip=["Ward", "Total_Incidents"],  # show "BoroName" value in tooltip (on hover)
+#| label: fig-ward-map
+#| fig-cap: "Ward level visualisation of incident and population geography."
+ward_map = mapped_data.explore(
+    column='Incidents per 10,000 (21/22 - 22/23)',
+    tooltip=["Ward", 'Incidents per 10,000 (21/22 - 22/23)'],  # show "BoroName" value in tooltip (on hover)
     popup=True,  # show all values in popup (on click)
-    tiles="CartoDB positron",  # use "CartoDB positron" tiles
+    tiles=None,
     style_kwds=dict(color="black", linewidth=5),
-    legend=True
+    name='Incidents per 10,000 (21/22 - 22/23)'
 )
+
+top_animals = (
+    data.loc[data.fin_year.isin([2021, 2022])]
+    .groupby(['Ward', 'animal', 'fin_year']).size()
+    .unstack()
+    .sum(axis=1)
+    .groupby(level=0)
+    .apply(lambda x: x.loc[x == x.max()].index[0][1])
+    .rename('Most frequent animal type (21/22 & 22/23)')
+)
+
+top_animals.index = top_animals.index.map(lambda x: x.replace("'", ''))
+
+mapped_data.join(top_animals, how='left', on='Ward').explore(
+    m=ward_map,
+    column='Most frequent animal type (21/22 & 22/23)',
+    tooltip=["Ward", "Most frequent animal type (21/22 & 22/23)"],
+    popup=True,  # show all values in popup (on click)
+    tiles=None,
+    style_kwds=dict(color="black", linewidth=5),
+    legend=True,
+    show=False,
+    name="Most frequent animal type (21/22 & 22/23)",
+    missing_kwds= dict(color = "white",)
+)
+
+folium.TileLayer('CartoDB positron', name='Map Layer').add_to(ward_map)
+
+folium.LayerControl().add_to(ward_map)  # use folium to add layer control
+
+ward_map
 ```
 
-```{python map_population_Ward}
-mapped_data.explore(
-    column='Observation',
-    tooltip=["Ward", "Observation"],  # show "BoroName" value in tooltip (on hover)
-    popup=True,  # show all values in popup (on click)
-    tiles="CartoDB positron",  # use "CartoDB positron" tiles
-    style_kwds=dict(color="black", linewidth=5),
-    legend=True
-)
-```
+:::
 
-```{python map_population_district}
-mapped_data[['District', 'geometry', 'Observation', 'Total_Incidents']].dissolve(by='District', aggfunc='sum').explore(
-    column='Observation',
-    tooltip=["District", "Observation"],  # show "BoroName" value in tooltip (on hover)
-    popup=True,  # show all values in popup (on click)
-    tiles="CartoDB positron",  # use "CartoDB positron" tiles
-    style_kwds=dict(color="black", linewidth=5),
-    legend=True
-)
-```
+::::
 
-```{python map_incident_ratio_district}
-(
-    mapped_data[['District', 'geometry', 'Observation', 'Total_Incidents']]
-    .dissolve(by='District', aggfunc='sum')
-    .assign(Ratio=lambda x: x['Total_Incidents'].div(x.Observation).mul(100))
-).explore(
-    column='Ratio',
-    tooltip=["Ratio", "District", "Total_Incidents", "Observation"],  # show "BoroName" value in tooltip (on hover)
-    popup=True,  # show all values in popup (on click)
-    cmap='Blues',
-    tiles="CartoDB positron",  # use "CartoDB positron" tiles
-    style_kwds=dict(color="black", linewidth=5),
-    legend=True
-)
-```
-
-```{python map_incident_ratio_ward}
-(
-    mapped_data
-    .assign(Ratio=lambda x: x['Total_Incidents'].div(x.Observation).mul(100))
-).explore(
-    column='Ratio',
-    tooltip=["Ratio", "Ward", "District", "Total_Incidents", "Observation"],  # show "BoroName" value in tooltip (on hover)
-    popup=True,  # show all values in popup (on click)
-    cmap='Blues',
-    tiles="CartoDB positron",  # use "CartoDB positron" tiles
-    style_kwds=dict(color="black", linewidth=5),
-    legend=True
-)
-```
-
-## RSPCA
-
+:::::
 
 
 ## What next
