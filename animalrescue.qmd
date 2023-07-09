@@ -160,7 +160,7 @@ ts_fig.update_layout(showlegend=False)
 
 ### Trends
 
-```{python}
+```{python incident_trend_plot}
 #| label: fig-totalincidents-trends
 #| fig-cap: "West Midlands Fire Service animal rescue incidents: Total incidents by month year-on-year (top) and annual trend component (bottom)"
 trend_fig = make_subplots(
