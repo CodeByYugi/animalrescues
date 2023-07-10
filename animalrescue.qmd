@@ -384,15 +384,26 @@ animal_breakdown_fig.show()
 
 :::::
 
-## Location
+## Incident Location
 
 ::::: {.columns}
 
 :::: {.column width="40%"}
 
-### Key observations
+### Key observations {style="font-size: 1.4em"}
 
-add animal breakdown by location
+- Birmingham
+  - accounts for ca. 38% of all incidents (2013-2023)
+  - contributes ca. 47% of incident increase since 2013
+- Highest incident ratios per 10,000 people:*(since 20/21, population from 2021 census)*
+  - Dudley (0.78)
+  - Walsall (0.7)
+
+::: {.fragment}
+
+- Data very sparse at Ward level, difficult to interpret
+
+:::
 
 ::::
 
@@ -423,14 +434,14 @@ ward_mapped_data = (
 )
 
 for col, cmap in zip(
-    ['Total Incidents', 'Population (Census 2021)', 'Incidents per 10,000 (21/22 - 22/23)'],
-    ['Blues', 'Greys', 'Reds']
+    ['Total Incidents', 'Incidents per 10,000 (21/22 - 22/23)'],
+    ['Blues', 'Reds']
 ):
     ward_mapped_data.explore(
         m=district_map,
         column=col,
         cmap=cmap,
-        tooltip=["District", col],  # show "BoroName" value in tooltip (on hover)
+        tooltip=["District", col, 'Population (Census 2021)'],  # show "BoroName" value in tooltip (on hover)
         popup=True,  # show all values in popup (on click)
         tiles="CartoDB positron",  # use "CartoDB positron" tiles
         style_kwds=dict(color="black", linewidth=5),
@@ -457,7 +468,8 @@ ward_map = mapped_data.explore(
     popup=True,  # show all values in popup (on click)
     tiles=None,
     style_kwds=dict(color="black", linewidth=5),
-    name='Incidents per 10,000 (21/22 - 22/23)'
+    name='Incidents per 10,000 (21/22 - 22/23)',
+    missing_kwds= dict(color = "white",)
 )
 
 top_animals = (
