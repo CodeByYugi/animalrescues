@@ -253,26 +253,33 @@ trend_fig.update_yaxes(title_text='Trend', row=2, col=1)
 
 :::: {.column width="40%"}
 
-### Key observations
+::: {.fragment}
 
-Cats and dogs most prevalent (64% of total)
+### Key observations {style="font-size: 1.4em"}
 
-Cat related incidents:
+- Cat and dog incidents are the majority (64%)
 
-- account for 57% of total increase since 2013
-- have increased by 37.5% since 19/20
+- Cat incidents:
+  - account for 57% of total increase<br>*(since 13/14)*
+  - have increased by 37.5%<br>*(since 19/20)*
+- Dog-related incidents dropped in 20/21 but have since returned to 19/20 levels
+- Data on pet population over time somewhat ambiguous
   
-Dog-related incidents dropped in 20/21 but have since returned to 19/20 levels
+:::
 
-comment re pet population and incidents per pet pop
+::: {.fragment}
 
-add stuff re n-grams? dogs impacted more by corona?
+- Ca. 20% of incident descriptions mention RSPCA prior to 17/18 but then drop to 0
+- Analysing incident descriptions:
+  - Cats getting stuck on trees or roofs
+  - Dogs getting stuck in gates and fences
+  - Birds getting stuck in fishing gear
+
+:::
 
 ::::
 
 :::: {.column width="60%"}
-
-::: {.panel-tabset}
 
 ### incidents by animal type over time
 
