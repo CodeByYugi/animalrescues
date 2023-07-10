@@ -510,26 +510,84 @@ ward_map
 
 :::::
 
-```{python}
-#| label: fig-total-incidents-finyear-disctrict
-#| fig-cap: "UK Pet population over time (source: pdsa)"
-data.groupby(['fin_year', 'District']).size().unstack(fill_value=0).plot()
-```
+## Where next?
 
-## What next
+::::: {.columns}
 
-interpretation of trends (sevice, change, covid, awareness campaigns, ..;)
-threshold of incident counts/frequency and their significance?
-gap Dec 21- Apr 22? lockdown period, but likely missing data?
+:::: {.column width="50%"}
 
--   speak to stakeholders, what's the question? who is qualified to respond? anyone?
--   more data? postcode, timestamps, false alarms, call source, response times, animal population, what happens to the animals after? Shelter, return to owner, strays vs. pets
--   demand & capacity, specialised team(s)
--   where are the fire stations
+### What's the question? {style="font-size: 1.3em"}
 
-parallels to healthcare - call route - service access - fire service -\> ambulance, catchment areas, resource - population health & system level modelling
+Stakeholder input is crucial for:
 
-research rare event modelling
+::: {.incremental style="font-size: 0.8em"}
+
+- defining the ask
+- interpretation of data and context
+- avoiding 'number blindness'
+- steering, prioritising, and reviewing progress (AGILE)
+
+:::
+
+::: {.fragment}
+Example questions:
+:::
+
+::: {.incremental style="font-size: 0.8em"}
+
+- What factors might impact observed trends?
+- Empirical 'thresholds of significance' for incident count or frequency?
+- Are Fire Services the only entity responding to animal rescue incidents?
+- Which fire service team(s) can respond?
+- Data quality considerations?
+
+:::
+
+::: {.fragment style="font-size: 0.8em"}
+
+- More data? - depending on the question!
+  - 'Unresponded' incidents or 'false alarms'?
+  - 'Call source' and response times?
+  - What happens to the animals afterwards?
+  - Fire station / response team locations?
+
+:::
+
+::::
+
+:::: {.column width="50%"}
+
+::: {.fragment}
+### Parallels to Healthcare {style="font-size: 1.3em"}
+:::
+
+::: {.fragment}
+
+- Ambulance Services
+
+:::
+
+::: {.fragment}
+
+- Interaction of system-level services and organisaitons
+  - Discharge pathways and destinations
+  - Admission routes to healthcare providers
+  - Modelling of similarly sparse services/treatment pathways
+
+:::
+
+::: {.fragment}
+
+- Health Inequalities
+  - Access to healthcare services
+  - Geographic / demographic split
+  - Prevalence of conditions/comorbidities
+
+:::
+
+::::
+
+:::::
 
 # Appendix
 
