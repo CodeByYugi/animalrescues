@@ -264,7 +264,7 @@ trend_fig.update_yaxes(title_text='Trend', row=2, col=1)
   - have increased by 37.5%<br>*(since 19/20)*
 - Dog-related incidents dropped in 20/21 but have since returned to 19/20 levels
 - Data on pet population over time somewhat ambiguous
-  
+
 :::
 
 ::: {.fragment}
@@ -664,7 +664,7 @@ monthly_inc_fig.update_layout(
 )
 ```
 
-# Incidents by weekday
+## Incidents by weekday
 
 ```{python plot_indicents_weekday}
 #| label: fig-total-incidents-weekday
@@ -715,6 +715,40 @@ weekday_fig.update_xaxes(
 weekday_fig.show()
 ```
 
+## Time between incidents
+
+```{python plot_time_between_inc}
+#| label: fig-time-between-incs
+#| fig-cap: "Time between incidents in days"
+time_between = (
+        data.groupby(data.Incdate.dt.date).size().reset_index().sort_values('Incdate', ascending=True).Incdate.shift(-1) - \
+        data.groupby(data.Incdate.dt.date).size().reset_index().sort_values('Incdate', ascending=True).Incdate
+    ).dropna().apply(lambda x: x.total_seconds())/ 3600 / 24
+
+time_between_fig = go.Figure()
+
+time_between_fig.add_trace(
+    go.Scatter(
+        x=time_between.index,
+        y=time_between,
+        name='Time between incidents [days]',
+        line=dict(color='grey', width=1)
+    )
+)
+
+time_between_fig.add_trace(
+    go.Scatter(
+        x=time_between.rolling(50).mean().index,
+        y=time_between.rolling(50).mean(),
+        line=dict(color='red', dash='dash', width=3),
+        name='Rolling mean (50 incidents)'
+    )
+)
+
+time_between_fig.update_yaxes(title_text='Time between incidents [days]')
+time_between_fig.update_layout(title='Time between incidents in days')
+```
+
 ## Ratio of days in the (financial) year with incidents
 
 ``` {python plot_finyear_incident_ratio}
@@ -757,5 +791,73 @@ finyear_ratio_fig.update_yaxes(title_text='Ratio of days in the year with incide
 finyear_ratio_fig.update_layout(
     title=r'% of days in the (financial) year where incidents have occured'
 )
+```
+
+## Incidents by district over time and animal type
+
+```{python plot_inc_by_district}
+#| label: fig-incidents-by-district
+#| fig-cap: "Total Incidents by financial year by district (left) and Birmingham incidents by animal type (right)."
+inc_dist_fig = make_subplots(
+    rows=1, cols=2,
+    subplot_titles=('Total Incidents by year and district', 'Incidents in Brimingham by year and animal type')
+)
+
+inc_by_dist = data.groupby(['District', 'fin_year']).size().unstack(level=0, fill_value=0)
+
+for col in inc_by_dist.columns:
+    inc_dist_fig.add_trace(
+        go.Scatter(
+            x=inc_by_dist.index,
+            y=inc_by_dist[col],
+            name=col,
+            showlegend=True
+        ),
+        row=1,
+        col=1
+    )
+
+bhm_inc = data.groupby(['District', 'animal', 'fin_year']).size().loc['Birmingham'].unstack(level=0, fill_value=0)
+
+
+for col in bhm_inc.columns:
+    inc_dist_fig.add_trace(
+        go.Scatter(
+            x=bhm_inc.index,
+            y=bhm_inc[col],
+            name=col,
+            showlegend=True,
+            line=dict(dash='dash')
+        ),
+        row=1,
+        col=2
+    )
+
+inc_dist_fig.update_yaxes(title_text='Incidents', row=1, col=1)
+inc_dist_fig.update_yaxes(title_text='Incidents', row=1, col=2)
+inc_dist_fig.update_xaxes(
+    tickangle=-30, tickvals=inc_by_dist.index,
+    ticktext=inc_by_dist.index.map(lambda x: f'{x}/{(x+1) % 2000}'),
+    row=1, col=1
+)
+inc_dist_fig.update_xaxes(
+    tickangle=-30, tickvals=bhm_inc.index,
+    ticktext=bhm_inc.index.map(lambda x: f'{x}/{(x+1) % 2000}'),
+    row=1, col=2
+)
+
+inc_dist_fig.show()
+```
+
+## Animal Populations over time
+
+```{python plot_animal_pop}
+#| label: fig-paws-pet-pop
+#| fig-cap: "Cat, dog, and rabbit population over time in millions - Source: PAWS"
+pet_pop_fig = pet_pop_data.plot(
+    title='Cat, dog, and rabbit populations over time [m]'
+)
+
+pet_pop_fig.update_yaxes(title_text='Population [m]')
 ```
 
