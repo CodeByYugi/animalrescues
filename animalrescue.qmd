@@ -70,45 +70,56 @@ kml_shapes = load_and_combine_kml(kml_dir='kml')[['Name', 'geometry']].rename(co
 mapped_data = combine_maps_w_data(kml_shapes, data, census_2021)
 ```
 
-## Incident Data - Overview
+## Incident Data - Overview {.smaller}
 
 ::::: {.columns}
 
-:::: {.column width="45%"}
+:::: {.column width="40%"}
 
-### Data Characteristics
+### Data Characteristics {style="font-size:1.4em"}
 
-Data covers **Apr 2013 - Mar 23**
+- Date range: **Apr 2013 - Mar 2023**
+- **1411** Total animal rescue incidents
+- **7** Districts, **190** Wards in the West Midlands
 
-**1411** Total incidents
+::: {.fragment}
 
-**7** Districts, **190** Wards
+### Key Observations {style="font-size: 1.4em"}
 
-### Key Observations
+- Annual total nearly doubled over time<br>13/14 (99) to 22/23 (185)
+- Notable increases in 14/15, 16/17, and 20/21
 
-Increasing trend year on year
+:::
 
-particular jumps in 2016 and 2021
+::: {.fragment}
 
-mostly X incidents per day, fairly irregular/sparse
+- Incidents are infrequent day to day
+- Frequency of days with incidents has increased<br>(24% in 13/14 to 40% in 22/23)
 
-Seasonality: annual, weekday, BHol/Weekend, ...
+:::
 
-incidents year on year
-comment re ratio of days with
-time between
-avg. per day
+::: {.fragment}
+
+- Weak annual seasonality
+
+:::
+
+::: {.fragment}
+
+- **statement on time between**
+
+:::
 
 ::::
 
-:::: {.column width="55%"}
+:::: {.column width="60%"}
 ::: {.panel-tabset}
 
 ### Incidents over time
 
 ``` {python incident_ts_plot}
 #| label: fig-totalincidents-timeseries
-#| fig-cap: "West Midlands Fire Service animal rescue incidents: Total Incidents by financial year (top) and by week (bottom)."
+#| fig-cap: "Total animal rescue incidents by financial year (top) and by week (bottom)."
 ts_fig = make_subplots(
     rows=2, cols=1,
     subplot_titles=("Total incidents by financial year (Mar-Apr)", "Total incidents by week"),
@@ -118,7 +129,9 @@ ts_fig = make_subplots(
 ts_fig.add_trace(
     go.Scatter(
         x=data.groupby(data.fin_year).size().index.map(lambda x: f'{x}/{(x+1) % 2000}'),
-        y=data.groupby(data.fin_year).size()
+        y=data.groupby(data.fin_year).size(),
+        name='Annual incidents',
+        showlegend=True
     ),
     row=1,
     col=1
@@ -146,7 +159,21 @@ ts_fig.add_trace(
     go.Scatter(
         x=data.groupby(data.week).size().index,
         y=data.groupby(data.week).size(),
-        line=dict(color='red', width=1)
+        line=dict(color='red', width=1),
+        name='Weekly incidents',
+        showlegend=True
+    ),
+    row=2,
+    col=1
+)
+
+ts_fig.add_trace(
+    go.Scatter(
+        x=data.groupby(data.week).size().rolling(6).mean().index,
+        y=data.groupby(data.week).size().rolling(6).mean(),
+        line=dict(color='black', width=1, dash='dash'),
+        name='Rolling mean (6 wks)',
+        showlegend=True
     ),
     row=2,
     col=1
@@ -155,14 +182,14 @@ ts_fig.add_trace(
 
 ts_fig.update_yaxes(title_text="Incidents", row=2, col=1, rangemode="tozero")
 
-ts_fig.update_layout(showlegend=False)
+ts_fig.show()
 ```
 
 ### Trends
 
 ```{python incident_trend_plot}
 #| label: fig-totalincidents-trends
-#| fig-cap: "West Midlands Fire Service animal rescue incidents: Total incidents by month year-on-year (top) and annual trend component (bottom)"
+#| fig-cap: "Total animal rescue incidents by month year-on-year (top) and annual trend component based on fitted prophet model (bottom)"
 trend_fig = make_subplots(
     rows=2, cols=1,
     subplot_titles=(
@@ -195,7 +222,8 @@ trend_fig.add_trace(
     go.Scatter(
         x=prophet_fig.data[2]['x'],
         y=prophet_fig.data[2]['y'],
-        showlegend=False
+        showlegend=False,
+        name='Trend (annual)'
     ),
     row=2,
     col=1
@@ -212,17 +240,6 @@ trend_fig.update_yaxes(title_text='Trend', row=2, col=1)
 # trend_fig.data[2]['showlegend'] = False
 # trend_fig.update_xaxes(tickformat='%A', tickangle=-30, row=3, col=1)
 # trend_fig.update_yaxes(title_text='Trend', row=3, col=1)
-```
-
-### time between / poisson
-
-```{python}
-(   
-    (
-        data.groupby(data.Incdate.dt.date).size().reset_index().sort_values('Incdate', ascending=True).Incdate.shift(-1) - \
-        data.groupby(data.Incdate.dt.date).size().reset_index().sort_values('Incdate', ascending=True).Incdate
-    ).dropna().apply(lambda x: x.total_seconds())/ 3600 / 24
-).plot()
 ```
 
 :::
