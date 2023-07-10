@@ -7,6 +7,9 @@ from pathlib import Path
 import geopandas as gpd
 import prophet
 from prophet.plot import plot_plotly, plot_components_plotly
+from nltk import ngrams
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 
 
 def add_time_dimensions(to_prep, date_col='Incdate'):
@@ -167,3 +170,19 @@ def fit_and_predict(to_fit, p=30, f='d'):
     forecast = m.predict(future)
 
     return plot_components_plotly(m, forecast, uncertainty=False)
+
+
+def filter_stopwords(q):
+    filtered_list = []
+    for word in word_tokenize(q):
+        if word.casefold() not in set(stopwords.words("english")):
+            filtered_list.append(word)
+    return filtered_list
+
+
+def get_ngrams(s, n=2):
+    return [gram for gram in ngrams(s, n)]
+
+
+def ngram_counts(data, n=2, col='Incident Detail'):
+    return pd.Series([x for t in data[col].apply(filter_stopwords).apply(get_ngrams, args=(n,)).values for x in t]).value_counts()
