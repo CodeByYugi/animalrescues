@@ -2,78 +2,78 @@
   {
     "objectID": "animalrescue.html#incident-data---overview",
     "href": "animalrescue.html#incident-data---overview",
-    "title": "West Midlands Fire Service Animal Rescue Incident Data",
+    "title": "West Midlands Fire ServiceAnimal Rescues",
     "section": "Incident Data - Overview",
-    "text": "Incident Data - Overview\n\n\nData Characteristics\n\nDate range: Apr 2013 - Mar 2023\n1411 Total animal rescue incidents\n7 Districts, 190 Wards in the West Midlands\n\n\n\nKey Observations\n\nAnnual total nearly doubled over time13/14 (99) to 22/23 (185)\nNotable increases in 14/15, 16/17, and 20/21\n\n\n\n\nIncidents are infrequent day to day\nFrequency of days with incidents has increased(24% in 13/14 to 40% in 22/23)\n\n\n\n\nWeak annual seasonality\n\n\n\n\nstatement on time between\n\n\n\n\nIncidents over timeTrends\n\n\n\n\n\n\n                                                \nFigure 1: Total animal rescue incidents by financial year (top) and by week (bottom).\n\n\n\n\n\n\n\n\n\n                                                \nFigure 2: Total animal rescue incidents by month year-on-year (top) and annual trend component based on fitted prophet model (bottom)"
+    "text": "Incident Data - Overview\n\n\nData Characteristics\n\nDate range: Apr 2013 - Mar 2023\n1411 Total animal rescue incidents\n7 Districts, 190 Wards in the West Midlands\n\n\n\nKey Observations\n\nAnnual total nearly doubled over time13/14 (99) to 22/23 (185)\nNotable increases in 14/15, 16/17, and 20/21\n\n\n\n\nIncidents are infrequent day to day\nFrequency of days with incidents has increased(24% in 13/14 to 40% in 22/23)\n\n\n\n\nAnnual seasonality\n\n\n\n\nIncidents over timeTrends\n\n\n\n\n\n\n                                                \nFigure 1: Total animal rescue incidents by financial year (top) and by calendar week (bottom).\n\n\n\n\n\n\n\n\n\n                                                \nFigure 2: Total animal rescue incidents by month year-on-year (top) and annual trend component based on fitted prophet model (bottom)\n\n\n\n\n\n\n\n\n\nAnimal rescue incident data source: Birmingham City Observatory"
   },
   {
     "objectID": "animalrescue.html#animal-types",
     "href": "animalrescue.html#animal-types",
-    "title": "West Midlands Fire Service Animal Rescue Incident Data",
+    "title": "West Midlands Fire ServiceAnimal Rescues",
     "section": "Animal Types",
-    "text": "Animal Types\n\n\n\n\nKey observations\n\nCat and dog incidents are the majority (64%)\nCat incidents:\n\naccount for 57% of total increase(since 13/14)\nhave increased by 37.5%(since 19/20)\n\nDog-related incidents dropped in 20/21 but have since returned to 19/20 levels\nData on pet population over time somewhat ambiguous\n\n\n\n\nCa. 20% of incident descriptions mention RSPCA prior to 17/18 but then drop to 0\nAnalysing incident descriptions:\n\nCats getting stuck on trees or roofs\nDogs getting stuck in gates and fences\nBirds getting stuck in fishing gear\n\n\n\n\nincidents by animal type over time\n\n\n\n\n                                                \nFigure 3: West Midlands Fire Service animal rescue incidents: Total incidents broken down by year and aninaml type. Total incidents by financial year (left) and overall breakdown across all years (right) shown."
+    "text": "Animal Types\n\n\n\n\nKey observations\n\nPredominantly cat and dog incidents (64%)\nCat incidents:\n\naccount for 57% of total increase(since 13/14)\nhave increased by 37.5%(since 19/20)\n\nDog-related incidents dropped in 20/21 but have since returned to 19/20 levels\nData on pet population over time somewhat ambiguous\n\n\n\n\nCa. 20% of incident descriptions mention RSPCA prior to 17/18 but then drop to 0\nAnalysing incident descriptions:\n\nCats getting stuck on trees or roofs\nDogs getting stuck in gates and fences\nBirds getting stuck in fishing gear\n\n\n\n\nincidents by animal type over time\n\n\n\n\n                                                \nFigure 3: West Midlands Fire Service animal rescue incidents: Total incidents broken down by year and animal type. Total incidents by financial year (left) and overall breakdown across all years (right) shown."
   },
   {
     "objectID": "animalrescue.html#incident-location",
     "href": "animalrescue.html#incident-location",
-    "title": "West Midlands Fire Service Animal Rescue Incident Data",
+    "title": "West Midlands Fire ServiceAnimal Rescues",
     "section": "Incident Location",
-    "text": "Incident Location\n\n\nKey observations\n\nBirmingham\n\naccounts for ca. 38% of all incidents (2013-2023)\ncontributes ca. 47% of incident increase since 2013\n\nHighest incident ratios per 10,000 people:(since 20/21, population from 2021 census)\n\nDudley (0.78)\nWalsall (0.7)\n\n\n\n\nData very sparse at Ward level, difficult to interpret\n\n\n\n\nDistrict levelWard level\n\n\n\n\n\n\nMake this Notebook Trusted to load map: File -&gt; Trust Notebook\nFigure 4: District level visualisation of incident and population geography.\n\n\n\n\n\n\n\n\n\nMake this Notebook Trusted to load map: File -&gt; Trust Notebook\nFigure 5: Ward level visualisation of incident and population geography."
+    "text": "Incident Location\n\n\nKey observations\n\nBirmingham\n\naccounts for ca. 38% of all incidents (2013-2023)\ncontributes ca. 47% of incident increase since 2013\n\nHighest incident ratios per 10,000 people:(since 20/21, population from 2021 census)\n\nDudley (0.78)\nWalsall (0.7)\n\n\n\n\nData very sparse at Ward level, difficult to interpret\n\n\n\n\nDistrict levelWard level\n\n\n\n\n\n\nMake this Notebook Trusted to load map: File -&gt; Trust Notebook\nFigure 4: District level visualisation of incident and population geography.\n\n\n\n\n\n\n\n\n\nMake this Notebook Trusted to load map: File -&gt; Trust Notebook\nFigure 5: Ward level visualisation of incident and population geography.\n\n\n\n\n\n\n\n\n\nPopulation data source: Census 2021 custom dataset - usual residents by Electoral Wards (West Midlands)\nWard KML data source: https://www.doogal.co.uk"
   },
   {
     "objectID": "animalrescue.html#where-next",
     "href": "animalrescue.html#where-next",
-    "title": "West Midlands Fire Service Animal Rescue Incident Data",
+    "title": "West Midlands Fire ServiceAnimal Rescues",
     "section": "Where next?",
     "text": "Where next?\n\n\nWhat’s the question?\nStakeholder input is crucial for:\n\n\ndefining the ask\ninterpretation of data and context\navoiding ‘number blindness’\nsteering, prioritising, and reviewing progress (AGILE)\n\n\n\nExample questions:\n\n\n\nWhat factors might impact observed trends?\nEmpirical ‘thresholds of significance’ for incident count or frequency?\nAre Fire Services the only entity responding to animal rescue incidents?\nWhich fire service team(s) can respond?\nData quality considerations?\n\n\n\n\nMore data? - depending on the question!\n\n‘Unresponded’ incidents or ‘false alarms’?\n‘Call source’ and response times?\nWhat happens to the animals afterwards?\nFire station / response team locations?\n\n\n\n\n\n\nParallels to Healthcare\n\n\n\nAmbulance Services\n\n\n\n\nInteraction of system-level services and organisaitons\n\nDischarge pathways and destinations\nAdmission routes to healthcare providers\nModelling of similarly sparse services/treatment pathways\n\n\n\n\n\nHealth Inequalities\n\nAccess to healthcare services\nGeographic / demographic split\nPrevalence of conditions/comorbidities"
   },
   {
     "objectID": "animalrescue.html#year-on-year-change-of-incident-totals",
     "href": "animalrescue.html#year-on-year-change-of-incident-totals",
-    "title": "West Midlands Fire Service Animal Rescue Incident Data",
+    "title": "West Midlands Fire ServiceAnimal Rescues",
     "section": "Year on year change of incident totals",
     "text": "Year on year change of incident totals\n\n\n\n\n                                                \nFigure 6: Year on year change in total incidents by financial year (Mar-Apr)."
   },
   {
     "objectID": "animalrescue.html#total-incidents-by-month",
     "href": "animalrescue.html#total-incidents-by-month",
-    "title": "West Midlands Fire Service Animal Rescue Incident Data",
+    "title": "West Midlands Fire ServiceAnimal Rescues",
     "section": "Total incidents by month",
     "text": "Total incidents by month\n\n\n\n\n                                                \nFigure 7: Total animal rescue incidents by month (blue) and 12 month rolling mean (red dashed)."
   },
   {
     "objectID": "animalrescue.html#incidents-by-weekday",
     "href": "animalrescue.html#incidents-by-weekday",
-    "title": "West Midlands Fire Service Animal Rescue Incident Data",
+    "title": "West Midlands Fire ServiceAnimal Rescues",
     "section": "Incidents by weekday",
     "text": "Incidents by weekday\n\n\n\n\n                                                \nFigure 8: West Midlands Fire Service animal rescue incidents broken down by weekday"
   },
   {
     "objectID": "animalrescue.html#time-between-incidents",
     "href": "animalrescue.html#time-between-incidents",
-    "title": "West Midlands Fire Service Animal Rescue Incident Data",
+    "title": "West Midlands Fire ServiceAnimal Rescues",
     "section": "Time between incidents",
     "text": "Time between incidents\n\n\n\n\n                                                \nFigure 9: Time between incidents in days"
   },
   {
     "objectID": "animalrescue.html#ratio-of-days-in-the-financial-year-with-incidents",
     "href": "animalrescue.html#ratio-of-days-in-the-financial-year-with-incidents",
-    "title": "West Midlands Fire Service Animal Rescue Incident Data",
+    "title": "West Midlands Fire ServiceAnimal Rescues",
     "section": "Ratio of days in the (financial) year with incidents",
     "text": "Ratio of days in the (financial) year with incidents\n\n\n\n\n                                                \nFigure 10: Ratio [%] of days in each financial year where animal rescue incidents have occured."
   },
   {
     "objectID": "animalrescue.html#incidents-by-district-over-time-and-animal-type",
     "href": "animalrescue.html#incidents-by-district-over-time-and-animal-type",
-    "title": "West Midlands Fire Service Animal Rescue Incident Data",
+    "title": "West Midlands Fire ServiceAnimal Rescues",
     "section": "Incidents by district over time and animal type",
     "text": "Incidents by district over time and animal type\n\n\n\n\n                                                \nFigure 11: Total Incidents by financial year by district (left) and Birmingham incidents by animal type (right)."
   },
   {
     "objectID": "animalrescue.html#animal-populations-over-time",
     "href": "animalrescue.html#animal-populations-over-time",
-    "title": "West Midlands Fire Service Animal Rescue Incident Data",
+    "title": "West Midlands Fire ServiceAnimal Rescues",
     "section": "Animal Populations over time",
-    "text": "Animal Populations over time\n\n\n\n\n                                                \nFigure 12: Cat, dog, and rabbit population over time in millions - Source: PAWS"
+    "text": "Animal Populations over time\n\n\n\n\n                                                \nFigure 12: Cat, dog, and rabbit population over time in millions - Source: PDSA PAW Report\n\n\n\n\nAnimal population data source: PDSA PAW report"
   }
 ]
