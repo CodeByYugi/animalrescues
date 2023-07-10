@@ -380,16 +380,6 @@ animal_breakdown_fig.update_yaxes(title_text="Incidents", row=1, col=1, rangemod
 animal_breakdown_fig.show()
 ```
 
-### corona and ngrams? RSPCA
-
-```{python}
-#| label: fig-petpop-timeseries
-#| fig-cap: "UK Pet population over time (source: pdsa)"
-pd.merge(pet_pop_data, data.groupby([data.Incdate.dt.year, 'animal']).size().unstack(), left_index=True, right_index=True).drop([2013, 2023]).assign(cat_ratio=lambda x: x.cat/x.Cats, dog_ratio=lambda x:x.dog/x.Dogs, cat_year_on_year=lambda x:x.cat/x.cat.shift(), dog_year_on_year=lambda x:x.dog/x.dog.shift(), catpop_year_on_year=lambda x:x.Cats/x.Cats.shift(), dogpop_year_on_year=lambda x:x.Dogs/x.Dogs.shift()).plot()
-```
-
-:::
-
 ::::
 
 :::::
